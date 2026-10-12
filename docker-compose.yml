@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  chameleon-net:
+    build: .
+    container_name: chameleon-net
+    restart: unless-stopped
+    ports:
+      - "2222:2222"   # SSH Honeypot
+      - "8080:8080"   # Web Admin Emulator
+      - "8500:8500"   # Live Operations Dashboard
+    environment:
+      - CHAMELEON_ENV=production
+      - LLM_PROVIDER=mock
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - SSH_PORT=2222
+      - WEB_PORT=8080
+      - DASHBOARD_PORT=8500
+      - EGRESS_PROHIBITED=true
+    volumes:
+      - ./data:/app/data
+      - ./policies.yaml:/app/policies.yaml:ro
+    networks:
+      - honeypot-isolated
+
+networks:
+  honeypot-isolated:
+    driver: bridge
+    # internal: true strictly blocks external outbound internet access/egress from the container
+    internal: true

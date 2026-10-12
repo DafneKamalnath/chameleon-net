@@ -1,0 +1,78 @@
+# ChameleonNet Adaptive Honeypot Policy Configuration
+# Hot-reloadable: Changes take effect dynamically without service restart.
+
+version: "1.0"
+
+containment:
+  egress_prohibited: true
+  rate_limit_commands_per_minute: 60
+  session_timeout_seconds: 3600
+  pii_scrubbing: true
+
+fidelity_escalation:
+  - trigger_id: "high_skill_upgrade"
+    condition: "skill_score >= 5.5 or dwell_seconds >= 60"
+    target_fidelity: "high"
+    reason: "Elevated attacker sophistication or extended dwell time detected"
+
+  - trigger_id: "velocity_upgrade"
+    condition: "command_count >= 5 or skill_score >= 3.0"
+    target_fidelity: "medium"
+    reason: "Active reconnaissance pattern established"
+
+decoy_rules:
+  - id: "aws_credentials_decoy"
+    trigger_techniques:
+      - "T1552: Unsecured Credentials"
+      - "T1548: Abuse Elevation Control Mechanism"
+    min_skill_score: 3.0
+    decoy:
+      path: "/home/{username}/.aws/credentials"
+      category: "cloud_credentials"
+      description: "Synthetic AWS access keys for staging deployment bucket"
+      content: |
+        [default]
+        aws_access_key_id = AKIAIOSFODNN7EXAMPLE
+        aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+        region = eu-west-1
+        # Staging deployment worker key (auto-rotated weekly)
+
+  - id: "db_staging_config"
+    trigger_techniques:
+      - "T1083: File and Directory Discovery"
+      - "T1213: Data from Information Repositories"
+    min_dwell_seconds: 30
+    decoy:
+      path: "/home/{username}/.db_staging.env"
+      category: "database_secrets"
+      description: "Synthetic staging PostgreSQL credentials"
+      content: |
+        DB_HOST=10.0.1.5
+        DB_PORT=5432
+        DB_NAME=apex_staging_vault
+        DB_USER=apex_service_ro
+        DB_PASSWORD=syn_d83fa9b12_stage_pass
+        VAULT_ADDR=http://10.0.2.20:8200
+
+  - id: "fake_vpn_cert"
+    trigger_techniques:
+      - "T1016: Network Configuration Discovery"
+    min_command_count: 6
+    decoy:
+      path: "/home/{username}/.ssh/vpn_internal.ovpn"
+      category: "lateral_movement"
+      description: "Synthetic OpenVPN configuration pointing to isolated sinkhole"
+      content: |
+        client
+        dev tun
+        proto udp
+        remote 10.0.0.1 1194
+        resolv-retry infinite
+        nobind
+        # ApexCloud Internal Mesh Sinkhole
+
+profile_rotation:
+  - trigger_technique: "T1190: Exploit Public-Facing Application"
+    target_profile: "ubuntu_web_server"
+  - trigger_technique: "T1213: Data from Information Repositories"
+    target_profile: "database_host"

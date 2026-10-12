@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChameleonNet | LLM Adaptive Deception Platform</title>
+    <meta name="description" content="ChameleonNet: An LLM-Powered Adaptive Honeypot for Realistic Attacker Deception and Telemetry Analytics">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand-wrapper">
+            <div class="logo-badge">CN</div>
+            <div>
+                <h1 class="brand-title">ChameleonNet Deception Platform</h1>
+                <div class="brand-subtitle">LLM-Powered Adaptive Honeypot & Threat Telemetry Engine</div>
+            </div>
+        </div>
+        <div class="header-controls">
+            <div class="status-badge">
+                <span class="status-pulse"></span>
+                <span id="connection-status">Live WebSocket</span>
+            </div>
+            <button class="btn btn-secondary" id="btn-sim-ssh" onclick="triggerSimulation('ssh_recon')">
+                ▶ Demo: SSH Recon
+            </button>
+            <button class="btn btn-secondary" id="btn-sim-web" onclick="triggerSimulation('web_intrusion')">
+                ▶ Demo: Web Intrusion
+            </button>
+            <button class="btn btn-primary" id="btn-run-benchmark" onclick="runBenchmark()">
+                ⚡ Compare vs Static
+            </button>
+        </div>
+    </header>
+
+    <!-- Slide 4 Closed-Loop Pipeline Feedback Component -->
+    <section class="pipeline-card" aria-label="Closed-Loop Feedback Deception Pipeline">
+        <div class="pipeline-title">
+            <span>Adaptive Closed-Loop Feedback Cycle (Slide 4 Architecture)</span>
+            <span id="pipeline-cycle-status" style="font-weight: 600; font-size: 0.8rem; color: var(--text-muted);">Status: Ready</span>
+        </div>
+        <div class="pipeline-stages">
+            <div class="stage-step" id="stage-1">
+                <div class="stage-number">STAGE 01</div>
+                <div class="stage-name">Interaction Captured</div>
+                <div class="stage-desc" id="stage-1-desc">SSH shell commands or Web HTTP payloads received & quarantined.</div>
+            </div>
+            <div class="stage-step" id="stage-2">
+                <div class="stage-number">STAGE 02</div>
+                <div class="stage-name">Telemetry Analyzed</div>
+                <div class="stage-desc" id="stage-2-desc">ATT&CK tagging, dwell-time evaluation, and attacker skill scoring.</div>
+            </div>
+            <div class="stage-step" id="stage-3">
+                <div class="stage-number">STAGE 03</div>
+                <div class="stage-name">Honeypot Adapts</div>
+                <div class="stage-desc" id="stage-3-desc">Hot-reloading policy adjusts fidelity tier and plants synthetic decoys.</div>
+            </div>
+            <div class="stage-step" id="stage-4">
+                <div class="stage-number">STAGE 04</div>
+                <div class="stage-name">LLM Generates Response</div>
+                <div class="stage-desc" id="stage-4-desc">Role-conditioned LLM produces context-consistent synthetic stdout.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Real-time Metrics Summary -->
+    <section class="metrics-row" aria-label="Operational Metrics">
+        <div class="metric-card">
+            <div class="metric-label">Active Sessions</div>
+            <div class="metric-value" id="val-active-sessions">0</div>
+            <div class="metric-badge">Isolated Egress</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Interactions</div>
+            <div class="metric-value" id="val-total-events">0</div>
+            <div class="metric-badge">Logged in SQLite WAL</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Avg Dwell Time</div>
+            <div class="metric-value" id="val-avg-dwell">0s</div>
+            <div class="metric-badge">Session Persistence</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Active Fidelity</div>
+            <div class="metric-value" id="val-active-fidelity" style="color: var(--accent-orange);">HIGH</div>
+            <div class="metric-badge">LLM Dynamic Mode</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Decoys Planted</div>
+            <div class="metric-value" id="val-decoys-planted">3</div>
+            <div class="metric-badge">Synthetic AWS & DB</div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Split Grid -->
+    <main class="dashboard-grid">
+        
+        <!-- Left: Real-time Live Interaction Feed & Sessions -->
+        <div class="grid-col">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Live Attacker Interaction Stream</h2>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Real-time WebSocket feed</span>
+                </div>
+                <div class="event-list" id="event-feed">
+                    <!-- Events dynamically inserted here -->
+                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        Waiting for attacker interaction or simulated traffic...
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Active Attacker Sessions & Profiles</h2>
+                </div>
+                <div id="sessions-list" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                    <!-- Sessions dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Comparison Panel, ATT&CK Chart & Policy Decoys -->
+        <div class="grid-col">
+            <!-- Static vs ChameleonNet Comparison Panel -->
+            <div class="card" style="border-left: 4px solid var(--accent-orange);">
+                <div class="card-header">
+                    <h2 class="card-title">Static Honeypot vs ChameleonNet Benchmark</h2>
+                    <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="runBenchmark()">
+                        Re-run Test
+                    </button>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                    Identical scripted reconnaissance sequence executed simultaneously against a standard static honeypot vs ChameleonNet:
+                </p>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Evaluation Metric</th>
+                            <th>Legacy Static Honeypot</th>
+                            <th class="comparison-highlight">ChameleonNet (Adaptive)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Adversary Dwell Time</td>
+                            <td id="cmp-static-dwell">4.2s</td>
+                            <td class="comparison-highlight" id="cmp-cham-dwell">58.4s</td>
+                        </tr>
+                        <tr>
+                            <td>Commands Completed</td>
+                            <td id="cmp-static-cmds">3 / 12 (Aborted)</td>
+                            <td class="comparison-highlight" id="cmp-cham-cmds">12 / 12 (100%)</td>
+                        </tr>
+                        <tr>
+                            <td>Decoys / Artifacts Discovered</td>
+                            <td id="cmp-static-decoys">0</td>
+                            <td class="comparison-highlight" id="cmp-cham-decoys">5 synthetic files</td>
+                        </tr>
+                        <tr>
+                            <td>Attacker Discovery State</td>
+                            <td style="color: #DC2626; font-weight: 600;">Detected Deception Early</td>
+                            <td style="color: #16A34A; font-weight: 600;">Fully Engaged in Breadcrumb Trail</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="multiplier-box">
+                    <div class="multiplier-item">
+                        <div class="multiplier-val" id="cmp-dwell-mult">13.9x</div>
+                        <div class="multiplier-lbl">Adversary Dwell Time Increase</div>
+                    </div>
+                    <div class="multiplier-item">
+                        <div class="multiplier-val" id="cmp-intel-mult">5.0x</div>
+                        <div class="multiplier-lbl">Threat Intelligence & Artifact Gain</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MITRE ATT&CK Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">MITRE ATT&CK Techniques Observed</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="techniqueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Active Decoy & Containment Status -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Policy & Decoy Deployment Status</h2>
+                    <span class="badge badge-high">Hot-Reloadable</span>
+                </div>
+                <ul style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.8; padding-left: 1.2rem;">
+                    <li><strong>Egress Containment:</strong> Strictly Enforced (no external routes)</li>
+                    <li><strong>Synthetic AWS Decoy:</strong> <code>~/.aws/credentials</code> (Auto-planted on PrivEsc)</li>
+                    <li><strong>Synthetic DB Staging:</strong> <code>~/.db_staging.env</code> (Auto-planted on File Recon)</li>
+                    <li><strong>Lateral Mesh Decoy:</strong> <code>~/.ssh/vpn_internal.ovpn</code> (Sinkholed gateway)</li>
+                    <li><strong>PII Sanitizer:</strong> Real tokens, emails, keys scrubbed dynamically</li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
